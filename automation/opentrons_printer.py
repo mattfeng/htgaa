@@ -1,3 +1,5 @@
+from opentrons import protocol_api
+
 def cmyk2rgb(c, m, y, cmyk_scale, rgb_scale=255):
     r = int(rgb_scale * (1.0 - c / float(cmyk_scale)))
     g = int(rgb_scale * (1.0 - m / float(cmyk_scale)))
@@ -54,8 +56,29 @@ def test_colors(colors):
         closest_rgby = colors[closest_rgb]
         print(f"{label}: {rgb_color} -> {closest_rgb} -> {closest_rgby}")
 
+# metadata
+metadata = {
+    'protocolName': 'Pipette Printer',
+    'author': 'Matthew Feng <mattfeng@mit.edu>',
+    'description': 'A protocol that takes in an input image and does its best to replicate it using red, green, blue, and yellow dyes on a 96 well plate.',
+    'apiLevel': '2.11'
+}
 
-if __name__ == "__main__":
-    print("[i] Mixing colors...")
-    colors = make_colors()
-    test_colors(colors)
+# protocol run function. the part after the colon lets your editor know
+# where to look for autocomplete suggestions
+def run(protocol: protocol_api.ProtocolContext):
+    # labware
+    tiprack = protocol.load_labware('opentrons_96_tiprack_300ul', '1')
+    palette = protocol.load_labware('usascientific_12_reservoir_22ml', '2')
+    canvas = protocol.load_labware('nest_96_wellplate_200ul_flat', '5')
+
+    color = {
+        'green': 'A1',
+        'blue': 'A2',
+        'red': 'A3',
+        'yellow': 'A4'
+    }
+
+    # pipettes
+    left_pipette = protocol.load_instrument(
+         'p300_single', 'left', tip_racks=[tiprack])
